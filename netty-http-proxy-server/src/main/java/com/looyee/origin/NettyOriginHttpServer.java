@@ -19,7 +19,7 @@ public class NettyOriginHttpServer {
 
         try {
             // 先启动对内部 Netty服务端
-            NettyOriginHttpInnerServer innerServer = new NettyOriginHttpInnerServer();
+            final NettyOriginHttpInnerServer innerServer = new NettyOriginHttpInnerServer();
             new Thread(new Runnable() {
                 @Override
                 public void run() {

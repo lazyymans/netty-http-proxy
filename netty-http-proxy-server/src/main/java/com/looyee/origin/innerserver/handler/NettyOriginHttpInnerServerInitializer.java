@@ -27,7 +27,8 @@ public class NettyOriginHttpInnerServerInitializer extends ChannelInitializer<So
         pipeline.addLast("HttpResponseDecoder", new HttpResponseDecoder());
         // 使用 HttpRequestEncoder进行编码
         pipeline.addLast("HttpRequestEncoder", new HttpRequestEncoder());
-        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(512 * 1024));
+        // 2m
+        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(2 * 1024 * 1024));
         pipeline.addLast("IdleStateHandler", new IdleStateHandler(10, 0, 0, TimeUnit.SECONDS));
         pipeline.addLast("NettyOriginHttpInnerServerIdleStateTrigger", new NettyOriginHttpInnerServerIdleStateTrigger());
         pipeline.addLast("NettyOriginHttpInnerServerHandler", new NettyOriginHttpInnerServerHandler());

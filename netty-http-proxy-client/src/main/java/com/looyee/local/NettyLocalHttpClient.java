@@ -29,8 +29,8 @@ public class NettyLocalHttpClient {
                     .handler(new NettyLocalHttpClientInitializer());
 
             // 关于ChannelFuture 要分析，涉及到netty 的一部模型
-            String serverHost = NettyProperties.BUNDLE.getString("netty.server.inner.host");
-            Integer serverPort = Integer.parseInt(NettyProperties.BUNDLE.getString("netty.server.inner.port"));
+            String serverHost = NettyProperties.BUNDLE.getString("netty.server.origin.host");
+            Integer serverPort = Integer.parseInt(NettyProperties.BUNDLE.getString("netty.server.origin.port"));
             ChannelFuture channelFuture = bootstrap.connect(new InetSocketAddress(serverHost, serverPort)).sync();
 
             // 启动立即在服务端注册 clientId

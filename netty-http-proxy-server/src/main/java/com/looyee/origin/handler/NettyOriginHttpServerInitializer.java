@@ -14,7 +14,8 @@ public class NettyOriginHttpServerInitializer extends ChannelInitializer<SocketC
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast("HttpServerCodec", new HttpServerCodec());
-        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(512 * 1024));
+        // 2m
+        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(2 * 1024 * 1024));
         ReentrantLock reentrantLock = new ReentrantLock();
         Condition condition = reentrantLock.newCondition();
         pipeline.addLast("NettyOriginHttpServerHandler", new NettyOriginHttpServerHandler(reentrantLock, condition));

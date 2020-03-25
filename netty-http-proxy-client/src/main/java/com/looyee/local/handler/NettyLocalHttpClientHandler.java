@@ -9,6 +9,7 @@ import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -20,6 +21,8 @@ import java.util.Map;
 
 @Slf4j
 public class NettyLocalHttpClientHandler extends SimpleChannelInboundHandler<HttpObject> {
+
+    final CloseableHttpClient httpClient = HttpClients.custom().build();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject httpObject) throws Exception {
@@ -52,11 +55,10 @@ public class NettyLocalHttpClientHandler extends SimpleChannelInboundHandler<Htt
             Integer serverPort = Integer.parseInt(NettyProperties.BUNDLE.getString("netty.proxy.port"));
 
             String uri = "http://" + serverHost + ":" + serverPort + httpRequest.uri();
-            log.info("uri = {}", uri);
+            log.info("代理本地请求uri = {}", uri);
 
             HttpUriRequest uriRequest = null;
             HttpMethod method = httpRequest.method();
-            CloseableHttpClient httpClient = HttpClients.custom().build();
             Charset charset = CharsetUtil.UTF_8;
 
             // 处理请求方式
@@ -87,16 +89,26 @@ public class NettyLocalHttpClientHandler extends SimpleChannelInboundHandler<Htt
                 }
             }
             org.apache.http.HttpResponse response = httpClient.execute(uriRequest);
-
-            // 测试一个本地的代理请求响应
-            String res = "可以开始调用本地的代码了";
-            result = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.OK,
-                    Unpooled.wrappedBuffer(EntityUtils.toString(response.getEntity(), charset).getBytes(charset)));
+            if (response.getEntity() == null) {
+                result = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                        HttpResponseStatus.OK);
+            } else {
+                result = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                        HttpResponseStatus.OK,
+                        Unpooled.wrappedBuffer(EntityUtils.toString(response.getEntity(), charset).getBytes(charset)));
+            }
             Header[] allHeaders = response.getAllHeaders();
             for (Header header : allHeaders) {
                 result.headers().set(header.getName(), header.getValue());
             }
+        } catch (HttpHostConnectException e){
+            String res = "本地应用程序不存在，请检查客户端本地代理，本地程序是否启动";
+            log.error(res);
+            result = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+                    HttpResponseStatus.OK,
+                    Unpooled.wrappedBuffer(res.getBytes(CharsetUtil.UTF_8)));
+            result.headers().set(HttpHeaderNames.CONTENT_LENGTH, result.content().readableBytes());
+            result.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json;charset=UTF-8");
         } catch (Exception e) {
             log.error("", e);
         }

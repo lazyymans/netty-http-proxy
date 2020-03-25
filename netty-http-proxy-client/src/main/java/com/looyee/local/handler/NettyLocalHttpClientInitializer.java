@@ -28,7 +28,8 @@ public class NettyLocalHttpClientInitializer extends ChannelInitializer<SocketCh
         pipeline.addLast("HttpResponseEncoder", new HttpResponseEncoder());
         // 使用 HttpRequestDecoder进行解码
         pipeline.addLast("HttpRequestDecoder", new HttpRequestDecoder());
-        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(512 * 1024));
+        // 2m
+        pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(2 * 1024 * 1024));
         pipeline.addLast("IdleStateHandler", new IdleStateHandler(0, 2, 0, TimeUnit.SECONDS));
         pipeline.addLast("NettyLocalHttpClientIdleStateTrigger", new NettyLocalHttpClientIdleStateTrigger());
         pipeline.addLast("NettyLocalHttpClientHandler", new NettyLocalHttpClientHandler());
